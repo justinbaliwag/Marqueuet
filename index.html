@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media Trend Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Social Media Trend Analyzer</h1>
+        <p class="subtitle">Extracts live web discussions and visualizes public engagement.</p>
+
+        <div class="search-box">
+            <input type="text" id="userInput" placeholder="Search topic (e.g., Big Brew, AI, coffee, gaming)...">
+            <button id="searchBtn">Analyze</button>
+        </div>
+
+        <!-- AI Summary Card -->
+        <div id="summaryCard" class="card hidden">
+            <h3>AI Summary</h3>
+            <p id="summaryText"></p>
+        </div>
+
+        <!-- Chart Card -->
+        <div id="chartCard" class="card hidden">
+            <h3>Engagement Metrics</h3>
+            <div class="chart-wrapper">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Live Web Sources Card -->
+        <div id="sourcesCard" class="card hidden">
+            <h3>Live Sources Extracted:</h3>
+            <ul id="sourceList"></ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
