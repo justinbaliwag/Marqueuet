@@ -1,6 +1,12 @@
 # Marqueuet — Team Collaboration Guide
 
-Welcome to the team! This repository contains the source code for the **Marqueuet** project. If you are new to Git and GitHub, this guide explains the core concepts and provides the exact terminal commands needed to collaborate effectively without overwriting each other's work.
+The project is hosted and automatically deployed via GitHub Pages:
+
+**Live Demo & Deployment:**  [https://justinbaliwag.github.io/Marqueuet/](https://justinbaliwag.github.io/Marqueuet/)
+
+> * Any approved pull request merged into the main branch automatically updates this live URL.
+
+This repository contains the source code for the **Marqueuet** project. If you are new to Git and GitHub, this guide explains the core concepts and provides the exact terminal commands needed to collaborate effectively without overwriting each other's work.
 
 ---
 
