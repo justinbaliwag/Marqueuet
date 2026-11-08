@@ -6,8 +6,22 @@ The project is hosted and automatically deployed via GitHub Pages:
 
 > * Any approved pull request merged into the main branch automatically updates this live URL.
 
+---
+
 This repository contains the source code for the **Marqueuet** project. If you are new to Git and GitHub, this guide explains the core concepts and provides the exact terminal commands needed to collaborate effectively without overwriting each other's work.
 
+```text
+Marqueuet/
+├── index.html        (Structure & semantic markup only)
+├── style.css         (Apple-grade translucent glassmorphism & styles)
+├── app.js            (Spring physics & OSINT data logic)
+├── .gitignore        (Prevents local OS/editor files from being tracked)
+└── README.md         (Team documentation & deployment guides)
+```
+
+* **`index.html`**: Handles the layout, sections, navigation bars, and modals.
+* **`style.css`**: Handles color palettes, typography, responsive grids, and translucent blur materials.
+* **`app.js`**: Handles simulated social feeds, comparison inputs, chart updates, and spring interactions.
 ---
 
 ## 1. What is "Cloning"?
