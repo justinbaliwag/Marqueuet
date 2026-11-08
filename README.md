@@ -10,6 +10,7 @@ The project is hosted and automatically deployed via GitHub Pages:
 
 This repository contains the source code for the **Marqueuet** project. If you are new to Git and GitHub, this guide explains the core concepts and provides the exact terminal commands needed to collaborate effectively without overwriting each other's work.
 
+##  Project Directory Structure
 ```text
 Marqueuet/
 ├── index.html        (Structure & semantic markup only)
