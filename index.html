@@ -1,44 +1,600 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Social Media Trend Analyzer</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Marqueuet turns 30 days of public TikTok, Instagram and Facebook conversation into share of voice, sentiment and velocity from a single prompt.">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Marqueuet — Social OSINT Competitive Intelligence</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;600;700;800&family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    
+    <!-- External CSS -->
     <link rel="stylesheet" href="style.css">
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Social Media Trend Analyzer</h1>
-        <p class="subtitle">Extracts live web discussions and visualizes public engagement.</p>
-
-        <div class="search-box">
-            <input type="text" id="userInput" placeholder="Search topic (e.g., Big Brew, AI, coffee, gaming)...">
-            <button id="searchBtn">Analyze</button>
-        </div>
-
-        <!-- AI Summary Card -->
-        <div id="summaryCard" class="card hidden">
-            <h3>AI Summary</h3>
-            <p id="summaryText"></p>
-        </div>
-
-        <!-- Chart Card -->
-        <div id="chartCard" class="card hidden">
-            <h3>Engagement Metrics</h3>
-            <div class="chart-wrapper">
-                <canvas id="myChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Live Web Sources Card -->
-        <div id="sourcesCard" class="card hidden">
-            <h3>Live Sources Extracted:</h3>
-            <ul id="sourceList"></ul>
-        </div>
+<div class="splash" id="splash" aria-hidden="true">
+    <div class="splash-inner">
+        <span class="splash-brand">Marqueuet</span>
+        <span class="splash-line"><i></i></span>
     </div>
+</div>
+<script>
+/* ===== Splash controller (inline so it runs before first paint of the app) ===== */
+(() => {
+    const root = document.documentElement;
+    const splash = document.getElementById('splash');
+    if (!splash) return;
 
-    <script src="script.js"></script>
+    root.classList.add('reveal-ready');            // hero entrance animations wait for "splash-done"
+    let announced = false;
+    const announce = () => {                       // hero fade-up starts here
+        if (announced) return;
+        announced = true;
+        root.classList.add('splash-done');
+        window.dispatchEvent(new Event('splash:done'));
+    };
+    // Failsafe: if landing.js never loads, never leave scroll-reveal content hidden
+    setTimeout(() => { if (!window.__pvReady) root.classList.add('pv-nojs'); }, 4000);
+
+    /* --- OPTIONAL: play once per session (uncomment to enable) ---
+    const KEY = 'marqueuet_splash_seen';
+    try {
+        if (sessionStorage.getItem(KEY)) { splash.remove(); announce(); return; }
+        sessionStorage.setItem(KEY, '1');
+    } catch (_) {}
+    */
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const HOLD_MS = reduced ? 250 : 1000;   // time before exit starts
+    const EXIT_MS = reduced ? 200 : 650;    // must match CSS exit duration
+    let finished = false;
+
+    // The landing overlay is parsed after this script, so look it up lazily
+    const setHeroInert = v => { const h = document.getElementById('heroLanding'); if (h) h.inert = v; };
+    root.classList.add('splash-lock');
+    document.addEventListener('DOMContentLoaded', () => { if (!finished) setHeroInert(true); });
+
+    const cleanup = () => {
+        if (finished) return;
+        finished = true;
+        splash.style.pointerEvents = 'none';
+        splash.remove();
+        root.classList.remove('splash-lock');
+        setHeroInert(false);
+        announce();                                  // no-op if already announced
+    };
+
+    const exit = () => {
+        splash.classList.add('is-exiting');
+        splash.style.pointerEvents = 'none';
+        setTimeout(announce, reduced ? 0 : 220);     // hero rises while the curtain lifts
+        splash.addEventListener('transitionend', e => {
+            if (e.target === splash && (e.propertyName === 'transform' || (reduced && e.propertyName === 'opacity'))) cleanup();
+        });
+        setTimeout(cleanup, EXIT_MS + 150);          // safety net
+    };
+
+    const fontsReady = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    const minHold = new Promise(r => setTimeout(r, HOLD_MS));
+    Promise.all([minHold, Promise.race([fontsReady, new Promise(r => setTimeout(r, HOLD_MS + 300))])]).then(exit);
+})();
+</script>
+
+<!-- ============ SCROLLING LANDING (overlay; hidden by enterWorkspace) ============ -->
+<div class="landing" id="heroLanding" aria-label="Marqueuet landing page">
+
+    <!-- Sticky header -->
+    <header class="pv-header" id="pvHeader">
+        <a href="#pvTop" class="hero-brand" data-scroll-to="top">Marqueuet</a>
+        <button type="button" class="pv-cta-pill" onclick="enterWorkspace('compare', event)">Get Started</button>
+    </header>
+
+    <main>
+        <!-- SECTION 1 — HERO -->
+        <section class="pv-hero" id="pvTop" aria-labelledby="pvHeroTitle">
+            <h1 class="hero-headline pv-hero-anim" id="pvHeroTitle" style="--i:0">Hours of Scrolling Minimized into a Single Prompt</h1>
+            <p class="hero-subtext pv-hero-anim" style="--i:1">Marqueuet is an AI platform that combines social media insights into one single prompt</p>
+            <div class="pv-hero-anim" style="--i:2">
+                <button class="button-02" id="heroGetStartedBtn" type="button" onclick="enterWorkspace('compare', event)">
+                    <span class="inner">Get Started</span>
+                    <span class="circle"><span>&rarr;</span></span>
+                </button>
+            </div>
+            <div class="pv-cue-wrap">
+                <button type="button" class="pv-cue pv-hero-anim" style="--i:4" data-scroll-to="#pvOverview">
+                    <span>Scroll to explore</span>
+                    <span class="pv-cue-line" aria-hidden="true"></span>
+                </button>
+            </div>
+        </section>
+
+
+
+<!-- SECTION 2 — UNIFIED SPLIT SHOWCASE (LEFT: WHAT IS MARQUEUET / RIGHT: LAPTOP + PHONE) -->
+        <section class="pv-section pv-split-showcase" id="pvOverview" aria-labelledby="pvOverviewTitle">
+            <div class="pv-wrap">
+                <div class="pv-split-grid">
+                    <!-- LEFT COLUMN: WHAT IS MARQUEUET + 3 COMPACT STEPS -->
+                    <div class="pv-split-left">
+                        <p class="pv-eyebrow" data-reveal><span class="live-dot" style="margin:0"></span>What is Marqueuet?</p>
+                        <h2 class="pv-h2" id="pvOverviewTitle" data-reveal>Social listening,<br>without the scrolling.</h2>
+                        <p class="pv-lead" data-reveal>Marqueuet is a competitive-intelligence workspace for social media. Name two brands or products, and it turns 30 days of public TikTok, Instagram, and Facebook conversation into one side-by-side read—built for desktop deep-dives and mobile checks.</p>
+
+                        <div class="pv-steps-stack">
+                            <article class="pv-step-row" data-reveal>
+                                <span class="pv-step-no">01</span>
+                                <div>
+                                    <h3>Ask in one prompt</h3>
+                                    <p>Type a matchup like <b>Brand A vs Brand B</b> or benchmark up to three rivals at once. Marqueuet keeps comparisons equal: brand vs brand, product vs product.</p>
+                                </div>
+                            </article>
+
+                            <article class="pv-step-row" data-reveal>
+                                <span class="pv-step-no">02</span>
+                                <div>
+                                    <h3>Read 30 days of public posts</h3>
+                                    <p>Trailing 30-day public posts across TikTok, Instagram, and Facebook, filtered above 5 engagements so you see real signal, not noise.</p>
+                                </div>
+                            </article>
+
+                            <article class="pv-step-row" data-reveal>
+                                <span class="pv-step-no">03</span>
+                                <div>
+                                    <h3>Get a decision-ready view</h3>
+                                    <p>Share of Voice, sentiment against 24h velocity, community depth, and five purchase drivers. Bookmark it, export a CSV, or print a pitch PDF.</p>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: LAPTOP + OVERLAPPING MOBILE PHONE GRAPHIC -->
+                    <div class="pv-split-right">
+                        <div class="pv-devices-showcase">
+                            <!-- COMPACT WIDESCREEN LAPTOP -->
+                            <div class="pv-laptop" data-reveal="pop">
+                                <div class="pv-laptop-lid">
+                                    <div class="pv-laptop-chrome" aria-hidden="true">
+                                        <div class="pv-win-dots">
+                                            <span></span><span></span><span></span>
+                                        </div>
+                                        <div class="pv-url-pill">marqueuet.app/compare</div>
+                                        <div class="pv-chrome-spacer"></div>
+                                    </div>
+
+                                    <div class="pv-laptop-screen">
+                                        <div class="pv-mini-topbar" data-pv-prompt>
+                                            <div class="pv-mini-search">
+                                                <span class="live-dot" style="margin:0;width:6px;height:6px;"></span>
+                                                <span class="pv-prompt-text" data-pv-typed>Brand A vs Brand B</span>
+                                                <span class="osint-model-chip" style="padding:2px 7px;font-size:9.5px;">Brands 30d</span>
+                                            </div>
+                                            <div class="pv-mini-legend">
+                                                <span><i style="background:var(--c0)"></i>Brand A (57%)</span>
+                                                <span><i style="background:var(--c1)"></i>Brand B (43%)</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="pv-laptop-bento">
+                                            <!-- Card 1: SOV Donut -->
+                                            <div class="pv-bento-box">
+                                                <div class="pv-bento-lbl">Share of Voice</div>
+                                                <div class="pv-bento-body" style="display:flex;align-items:center;justify-content:center;gap:10px;">
+                                                    <svg viewBox="0 0 100 100" width="66" height="66">
+                                                        <g transform="rotate(-90 50 50)">
+                                                            <circle cx="50" cy="50" r="36" fill="none" stroke="var(--c1)" stroke-width="13"/>
+                                                            <circle cx="50" cy="50" r="36" fill="none" stroke="var(--c0)" stroke-width="13" stroke-dasharray="129 226"/>
+                                                        </g>
+                                                        <text x="50" y="54" text-anchor="middle" font-size="14" font-weight="800" fill="#F4F9F6">57%</text>
+                                                    </svg>
+                                                    <div class="pv-mini-bars">
+                                                        <div><span>TT</span><i style="width:82%;background:var(--c0)"></i></div>
+                                                        <div><span>IG</span><i style="width:64%;background:var(--c1)"></i></div>
+                                                        <div><span>FB</span><i style="width:71%;background:var(--c0)"></i></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Card 2: Sentiment & Velocity Map -->
+                                            <div class="pv-bento-box">
+                                                <div class="pv-bento-lbl">Sentiment vs Velocity</div>
+                                                <div class="pv-bento-body">
+                                                    <svg viewBox="0 0 180 86" width="100%" height="74">
+                                                        <line x1="90" y1="6" x2="90" y2="80" stroke="rgba(255,255,255,0.12)" stroke-dasharray="3 3"/>
+                                                        <line x1="8" y1="43" x2="172" y2="43" stroke="rgba(255,255,255,0.12)" stroke-dasharray="3 3"/>
+                                                        <circle cx="132" cy="24" r="15" fill="var(--c0)" fill-opacity="0.9"/>
+                                                        <text x="132" y="27" text-anchor="middle" font-size="8" font-weight="800" fill="#05130E">A</text>
+                                                        <circle cx="76" cy="48" r="12" fill="var(--c1)" fill-opacity="0.9"/>
+                                                        <text x="76" y="51" text-anchor="middle" font-size="8" font-weight="800" fill="#05130E">B</text>
+                                                    </svg>
+                                                </div>
+                                            </div>
+
+                                            <!-- Card 3: Purchase Drivers -->
+                                            <div class="pv-bento-box">
+                                                <div class="pv-bento-lbl">Top Drivers</div>
+                                                <div class="pv-driver-mini">
+                                                    <div class="pv-dm-row"><span>Quality</span><div class="pv-dm-track"><i style="width:93%;background:var(--c0)"></i></div></div>
+                                                    <div class="pv-dm-row"><span>Speed</span><div class="pv-dm-track"><i style="width:90%;background:var(--c1)"></i></div></div>
+                                                    <div class="pv-dm-row"><span>Value</span><div class="pv-dm-track"><i style="width:87%;background:var(--c0)"></i></div></div>
+                                                    <div class="pv-dm-row"><span>Aesthetic</span><div class="pv-dm-track"><i style="width:79%;background:var(--c1)"></i></div></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="pv-laptop-base" aria-hidden="true">
+                                    <div class="pv-laptop-notch"></div>
+                                </div>
+                            </div>
+
+                            <!-- TALL SLENDER MOBILE PHONE MOCKUP -->
+                            <aside class="pv-phone" data-reveal="pop" aria-label="Mobile preview of Brand A vs Brand B">
+                                <div class="pv-phone-island" aria-hidden="true"></div>
+                                <div class="pv-phone-screen">
+                                    <div class="pv-phone-topbar">
+                                        <span class="pv-phone-brand">Marqueuet</span>
+                                        <span class="type-badge" style="font-size:8.5px;padding:2px 6px;">Mobile</span>
+                                    </div>
+
+                                    <div class="pv-phone-query">
+                                        <span class="live-dot" style="margin:0;width:5px;height:5px;"></span>
+                                        <span>Brand A vs Brand B</span>
+                                    </div>
+
+                                    <div class="pv-phone-card">
+                                        <div class="pv-phone-card-head">
+                                            <strong>Share of Voice</strong>
+                                            <span>30d OSINT</span>
+                                        </div>
+                                        <div class="pv-phone-sov-bars">
+                                            <div class="pv-phone-sov-item">
+                                                <div class="pv-phone-sov-lbl"><span style="color:var(--c0-text)">Brand A</span><span>57%</span></div>
+                                                <div class="drv-track" style="height:5px;"><div class="drv-fill" style="width:57%;background:var(--c0)"></div></div>
+                                            </div>
+                                            <div class="pv-phone-sov-item">
+                                                <div class="pv-phone-sov-lbl"><span style="color:var(--c1-text)">Brand B</span><span>43%</span></div>
+                                                <div class="drv-track" style="height:5px;"><div class="drv-fill" style="width:43%;background:var(--c1)"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pv-phone-card">
+                                        <div class="pv-phone-card-head">
+                                            <strong>Net Sentiment</strong>
+                                            <span style="color:var(--ok);">+68% Lead</span>
+                                        </div>
+                                        <div style="display:flex;gap:5px;">
+                                            <div style="flex:1;background:rgba(56,229,150,0.12);border-radius:7px;padding:5px;text-align:center;">
+                                                <div style="font-size:12px;font-weight:800;color:var(--c0);">+68%</div>
+                                                <div style="font-size:9px;color:var(--muted);">Brand A</div>
+                                            </div>
+                                            <div style="flex:1;background:rgba(245,176,65,0.12);border-radius:7px;padding:5px;text-align:center;">
+                                                <div style="font-size:12px;font-weight:800;color:var(--c1);">+55%</div>
+                                                <div style="font-size:9px;color:var(--muted);">Brand B</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pv-phone-card" style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+                                        <div>
+                                            <div class="pv-phone-card-head">
+                                                <strong>Live Pulse</strong>
+                                                <span style="color:var(--ok);">+192% vel</span>
+                                            </div>
+                                            <div class="pv-phone-post-meta">
+                                                <span class="plat-icon plat-tiktok" style="width:16px;height:16px;font-size:8px;border-radius:4px;">TT</span>
+                                                <strong style="font-size:10px;">@pulse.osint</strong>
+                                            </div>
+                                            <p style="font-size:10px;line-height:1.35;color:rgba(244,249,246,0.82);">Brand A leading 30-day share of voice &amp; creator mentions over Brand B.</p>
+                                        </div>
+                                        <button type="button" class="fc-compare-btn" style="width:100%;justify-content:center;margin-top:6px;padding:4px 8px;font-size:10px;" onclick="openMatchup('Brand A vs Brand B','brand',event)">
+                                            Open Live App &rarr;
+                                        </button>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4 — FINAL CTA -->
+        <section class="pv-section pv-final" aria-labelledby="pvFinalTitle">
+            <div class="pv-wrap">
+                <div class="pv-final-card" data-reveal="pop">
+                    <h2 class="pv-h2" id="pvFinalTitle">Run your first prompt.</h2>
+                    <p class="pv-lead">Skip the hours of scrolling. Name two rivals and see who is winning the conversation across TikTok, Instagram and Facebook.</p>
+                    <div class="pv-final-cta">
+                        <button class="button-02" type="button" onclick="enterWorkspace('compare', event)">
+                            <span class="inner">Get Started</span>
+                            <span class="circle"><span>&rarr;</span></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="pv-footer">
+        <span>30-Day Trailing Public OSINT</span><span>&bull;</span>
+        <span>TikTok &bull; Instagram &bull; Facebook</span><span>&bull;</span>
+        <span>Share of Voice, Sentiment &amp; Velocity</span>
+    </footer>
+</div>
+
+<div class="app-shell" id="appShell">
+    <!-- FLUID DRAGGABLE SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <a href="#hero" class="brand-logo" onclick="showHeroLanding(event); return false;" title="Return to Hero Landing">
+                <span class="brand-initial">M</span><span class="hide-on-collapse">arqueuet</span>
+            </a>
+            <button type="button" class="rail-toggle-btn" onclick="toggleSidebar()" title="Collapse / Expand Sidebar" aria-label="Toggle Sidebar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+            </button>
+        </div>
+
+        <button type="button" class="new-compare-btn active" id="btnNewChat" onclick="startNewComparison()" title="New chat">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span class="hide-on-collapse">New chat</span>
+        </button>
+
+        <nav class="nav-group" aria-label="Main Workspace">
+            <button type="button" class="nav-item" data-nav="pulse" onclick="switchView('pulse')" title="Trending Now (Live Social Feed)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span class="hide-on-collapse">Trending Now</span>
+                <span class="live-dot hide-on-collapse" title="Live Unprompted Trends"></span>
+            </button>
+            <button type="button" class="nav-item" data-nav="results" onclick="switchView('results')" title="Visual Results Report">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+                <span class="hide-on-collapse">Visual Results</span>
+            </button>
+        </nav>
+
+        <div class="recent-section hide-on-collapse">
+            <div class="recent-header">
+                <span>Recent Comparisons</span>
+                <span id="recentCountLabel">5</span>
+            </div>
+            <div id="sidebarRecentList"></div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="user-mini">
+                <div class="avatar-badge">S</div>
+                <div class="user-meta hide-on-collapse">
+                    <strong>Brand Strategist</strong>
+                    <span>OSINT Pro Tier</span>
+                </div>
+            </div>
+            <button type="button" class="rail-toggle-btn hide-on-collapse" id="themeBtn" onclick="toggleTheme()" title="Switch Dark / Light Theme">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+            </button>
+        </div>
+
+        <div class="sidebar-grab-handle" id="sidebarGrabHandle" title="Drag or flick to resize sidebar">
+            <div class="sidebar-grab-pill"></div>
+        </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <div class="main-viewport" id="mainViewport">
+        <header class="topbar" id="mainTopbar">
+            <div class="topbar-left">
+                <button type="button" class="open-sidebar-pill" onclick="toggleSidebar()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+                    Open sidebar
+                </button>
+                <div class="osint-status-badge">
+                    <span class="live-dot" style="margin:0;"></span>
+                    <span>30-Day Trailing OSINT • &gt;5 Engagement Filter</span>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <button type="button" class="top-pill-btn" onclick="showHeroLanding(event)">
+                    Hero Landing
+                </button>
+                <button type="button" class="top-pill-btn" onclick="switchView('pulse')">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Trending Now
+                </button>
+                <button type="button" class="top-pill-btn" onclick="toggleTheme()">
+                    Theme
+                </button>
+            </div>
+        </header>
+
+        <!-- PAGE 1: DEDICATED PROMPT STAGE -->
+        <section id="view-compare" class="view-page active">
+            <div class="compare-stage">
+                <div class="ambient-glow"></div>
+
+                <div class="compare-center-box">
+                    <div class="welcome-pill">
+                        <span class="live-dot" style="margin:0;"></span>
+                        <span>Welcome back, Strategist</span>
+                    </div>
+                    <h1 class="gemini-heading">Where should we start?</h1>
+
+                    <div class="prompt-pill-wrap">
+                        <form class="prompt-pill-bar" id="compareForm" autocomplete="off">
+                            <button type="button" class="prompt-plus-btn" onclick="cycleSamplePrompt()" title="Insert sample comparison">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
+                            <input type="text" id="compareInput" placeholder="Compare two brands, e.g. Jollibee vs McDo or KKOPI vs BIGBREW..." aria-label="Comparison Prompt">
+                            <span class="osint-model-chip" id="scopeIndicatorChip">Brands 30d &#9662;</span>
+                            <button type="submit" class="prompt-submit-btn" aria-label="Run Comparison">
+                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="gemini-mode-toggle" role="group" aria-label="Entity Comparison Category">
+                        <div class="segmented-thumb" id="modeSegmentedThumb"></div>
+                        <button type="button" class="g-mode-pill active" id="pillModeBrand" onclick="setCompareCategory('brand')">Brands</button>
+                        <button type="button" class="g-mode-pill" id="pillModeProduct" onclick="setCompareCategory('product')">Products</button>
+                    </div>
+
+                    <div class="guardrail-card" id="guardrailCard" role="alert">
+                        <div class="guardrail-title">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span id="guardrailHeading">Entity Hierarchy Mismatch</span>
+                        </div>
+                        <p class="guardrail-desc" id="guardrailText"></p>
+                        <div class="guardrail-actions" id="guardrailButtons"></div>
+                    </div>
+
+                    <div class="gemini-suggestions-list" id="exploreMatchupsList"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: TRENDING NOW -->
+        <section id="view-pulse" class="view-page">
+            <div class="pulse-container">
+                <div class="pulse-header">
+                    <div>
+                        <h1>Right-Now Social Pulse</h1>
+                        <p>Unprompted live OSINT feed for light scrolling, breakout trend spotting, and 1-click rival benchmarking.</p>
+                    </div>
+                    <button type="button" class="btn-res primary" onclick="switchView('compare')">
+                        + Custom Prompt Comparison
+                    </button>
+                </div>
+
+                <div class="pulse-filters-row">
+                    <div class="filter-group" id="pulseCatGroup">
+                        <button type="button" class="f-pill active" onclick="filterPulseCat('all', this)">All Pulse</button>
+                        <button type="button" class="f-pill" onclick="filterPulseCat('food', this)">Food &amp; Coffee</button>
+                        <button type="button" class="f-pill" onclick="filterPulseCat('tech', this)">Tech &amp; SKUs</button>
+                        <button type="button" class="f-pill" onclick="filterPulseCat('beauty', this)">Beauty &amp; Retail</button>
+                    </div>
+                    <div class="filter-group" id="pulsePlatGroup">
+                        <button type="button" class="f-pill active" onclick="filterPulsePlat('all', this)">All Platforms</button>
+                        <button type="button" class="f-pill" onclick="filterPulsePlat('tiktok', this)">TikTok</button>
+                        <button type="button" class="f-pill" onclick="filterPulsePlat('instagram', this)">Instagram</button>
+                        <button type="button" class="f-pill" onclick="filterPulsePlat('facebook', this)">Facebook</button>
+                    </div>
+                </div>
+
+                <div class="pulse-grid">
+                    <div class="feed-stream" id="pulseFeedStream"></div>
+
+                    <aside class="pulse-side">
+                        <div class="side-panel">
+                            <h2>
+                                <span>Breakout Velocity (24h)</span>
+                                <span style="font-size:12px; color:var(--muted); font-weight:500;">TikTok • IG • FB</span>
+                            </h2>
+                            <div id="pulseLeaderboard"></div>
+                        </div>
+
+                        <div class="side-panel">
+                            <h2>
+                                <span>Recently Viewed Charts</span>
+                                <span style="font-size:12px; color:var(--muted); font-weight:500;">1-Click Open</span>
+                            </h2>
+                            <div class="mini-recent-grid" id="pulseRecentGrid"></div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: VISUAL RESULTS DASHBOARD -->
+        <section id="view-results" class="view-page">
+            <div class="results-container">
+                <div class="res-header">
+                    <div>
+                        <div class="res-nav-links">
+                            <button type="button" class="back-pill" onclick="switchView('compare')">&larr; New chat</button>
+                            <span style="color:var(--line-bright)">•</span>
+                            <button type="button" class="back-pill" onclick="switchView('pulse')">Trending Now</button>
+                        </div>
+                        <div class="res-title-group">
+                            <h1 id="resMatchupTitle">Jollibee vs McDo</h1>
+                            <span class="type-badge" id="resEntityBadge">Brands • 30d OSINT</span>
+                        </div>
+                    </div>
+                    <div class="res-actions">
+                        <button type="button" class="btn-res" onclick="bookmarkCurrentComparison()">Bookmark</button>
+                        <button type="button" class="btn-res" onclick="downloadNormalizedCSV()">Export CSV</button>
+                        <button type="button" class="btn-res primary" onclick="window.print()">Export Pitch PDF / PNG</button>
+                    </div>
+                </div>
+
+                <div class="legend-strip">
+                    <div class="legend-items" id="resLegendItems"></div>
+                    <span style="font-size:12px; color:var(--muted);" id="resFilterSummary"></span>
+                </div>
+
+                <div class="trinity-grid">
+                    <article class="viz-card col-5">
+                        <div class="viz-top">
+                            <div>
+                                <h3>1. Earned Share of Voice (SOV)</h3>
+                                <p>30-day public conversation &amp; platform split</p>
+                            </div>
+                            <div class="mini-toggle" role="group" aria-label="SOV Metric Mode">
+                                <div class="mini-toggle-thumb" id="sovSegmentedThumb"></div>
+                                <button type="button" class="active" id="btnSovMentions" onclick="switchSovMode('mentions')">Mentions</button>
+                                <button type="button" id="btnSovEngage" onclick="switchSovMode('engagement')">Engagement</button>
+                            </div>
+                        </div>
+                        <div class="viz-canvas">
+                            <div class="sov-split">
+                                <div id="sovDonutBox"></div>
+                                <div class="plat-stack-list" id="sovPlatBarsBox"></div>
+                            </div>
+                        </div>
+                        <div class="concise-badge" id="sovTakeawayLine"></div>
+                    </article>
+
+                    <article class="viz-card col-7">
+                        <div class="viz-top">
+                            <div>
+                                <h3>2. Public Sentiment &amp; Velocity Map</h3>
+                                <p>X: Net Sentiment • Y: 24h Velocity • Drag bubbles to test elastic spring</p>
+                            </div>
+                        </div>
+                        <div class="viz-canvas" id="sentimentMapBox" style="padding:10px;"></div>
+                        <div class="concise-badge" id="mapTakeawayLine"></div>
+                    </article>
+
+                    <article class="viz-card col-12">
+                        <div class="viz-top">
+                            <div>
+                                <h3>3. Engagement Velocity, Community Depth &amp; Consumer Drivers</h3>
+                                <p>Left: 6-Axis Public OSINT Signals • Right: 5 Purchase Drivers</p>
+                            </div>
+                        </div>
+                        <div class="viz-canvas">
+                            <div class="depth-dual-grid">
+                                <div id="radarSvgBox" style="display:flex; justify-content:center;"></div>
+                                <div class="driver-bars" id="driverBarsBox"></div>
+                            </div>
+                        </div>
+                        <div class="concise-badge" id="radarTakeawayLine"></div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div class="chart-tooltip" id="chartTooltip"></div>
+<div class="toast-banner" id="toastBanner">
+    <span class="live-dot" style="margin:0;"></span>
+    <span id="toastMsg">Ready</span>
+</div>
+
+<!-- External JS -->
+<script src="script.js" defer></script>
+<script src="landing.js" defer></script>
 </body>
 </html>
