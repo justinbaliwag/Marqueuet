@@ -277,7 +277,7 @@
             { q: 'Apple vs Galaxy S24', tag: 'Test Mismatched Guardrail (Brand vs SKU)', icon: 'shield' }
         ],
         product: [
-            { q: 'iPhone 16 Pro vs Galaxy S24 Ultra', tag: 'Flagship Camera & Battery OSINT', icon: 'phone' },
+            { q: 'iPhone 16 Pro vs Galaxy S24 Ultra', tag: 'Flagship camera and battery talk', icon: 'phone' },
             { q: 'Nike Air Max Dn vs Adidas Ultraboost 5', tag: 'Running Shoe Comfort & Durability', icon: 'zap' },
             { q: 'Sony WH-1000XM5 vs Bose QC Ultra', tag: 'ANC Headphone Community Depth', icon: 'music' }
         ]
@@ -510,20 +510,58 @@
 
         const totMentions = list.reduce((s, e) => s + e.mentions, 0);
         document.getElementById('resMatchupTitle').textContent = list.map(e => e.name).join(' vs ');
-        document.getElementById('resEntityBadge').textContent = `${list[0].type === 'product' ? 'Products (SKU vs SKU)' : 'Brands (Brand vs Brand)'} • 30d OSINT`;
-        document.getElementById('resFilterSummary').textContent = `${totMentions.toLocaleString()} verified public posts analyzed`;
-
+        document.getElementById('resEntityBadge').textContent = `${list[0].type === 'product' ? 'Products (product vs product)' : 'Brands (brand vs brand)'} • last 30 days`;
         document.getElementById('resLegendItems').innerHTML = list.map(e => `
             <div class="l-chip">
                 <span class="l-dot" style="background:${e.color.hex}"></span>
                 <span>${e.name}</span>
-                <small>${e.mentions.toLocaleString()} posts (${Math.round(e.mentions / totMentions * 100)}% SOV)</small>
+                <small>${e.mentions.toLocaleString()} posts &bull; ${Math.round(e.mentions / totMentions * 100)}% of the talk</small>
             </div>
         `).join('');
 
         drawSovVisual();
         drawSentimentScatter();
         drawRadarAndDrivers();
+        buildVerdict();
+    }
+
+    /* ===== VERDICT: one plain answer built from the same numbers the charts use ===== */
+    function buildVerdict() {
+        const list = state.activeProfiles;
+        if (!list || list.length < 2) return;
+
+        const totTalk = list.reduce((s, e) => s + e.mentions, 0) || 1;
+        const shares = list.map(e => ({ e, pct: Math.round(e.mentions / totTalk * 100) }));
+        const ranked = [...shares].sort((a, b) => b.pct - a.pct);
+        const win = ranked[0].e;
+        const runnerUp = ranked[1];
+        const gap = ranked[0].pct - runnerUp.pct;
+
+        const bestS = [...list].sort((a, b) => b.sentiment - a.sentiment)[0];
+        const bestV = [...list].sort((a, b) => b.velocity - a.velocity)[0];
+        const bestC = [...list].sort((a, b) => b.commentRatio - a.commentRatio)[0];
+
+        const lead = gap <= 2 ? 'is roughly tied with' : (gap >= 15 ? 'is well ahead of' : 'is ahead of');
+
+        document.getElementById('verdictLine').textContent =
+            gap <= 2
+                ? `${win.name} and ${runnerUp.e.name} are neck and neck`
+                : `${win.name} ${lead} ${runnerUp.e.name}`;
+
+        document.getElementById('verdictBarA').style.width = `${ranked[0].pct}%`;
+        document.getElementById('verdictBarA').style.background = win.color.hex;
+
+        const points = [
+            ['How people feel', `${bestS.name} gets the friendliest talk (${bestS.sentiment >= 0 ? '+' : ''}${bestS.sentiment}% more positive than negative).`],
+            ['How fast it grows', `${bestV.name} is growing fastest today (${bestV.velocity >= 100 ? '+' : ''}${bestV.velocity}% in 24 hours).`],
+            ['Who replies most', `${bestC.name} has the liveliest comment section (${bestC.commentRatio}/100 replies per like).`]
+        ];
+        document.getElementById('verdictPoints').innerHTML = points.map(([label, text]) =>
+            `<li><span class="dot"></span><span><b>${label}:</b> ${text}</span></li>`
+        ).join('');
+
+        document.getElementById('verdictFresh').textContent =
+            `${totTalk.toLocaleString()} public posts, last 30 days`;
     }
 
     function drawSovVisual() {
@@ -620,8 +658,8 @@
         });
 
         document.getElementById('sovTakeawayLine').innerHTML = `
-            <b class="k-tag">SOV Lead</b>
-            <span><strong>${win.name}</strong> captures <strong>${winPctTarget}%</strong> of total 30-day ${isEng ? 'weighted engagement' : 'mention volume'}.</span>
+            <b class="k-tag">Most talked about</b>
+            <span><strong>${win.name}</strong> takes <strong>${winPctTarget}%</strong> of all talk in the last 30 days (${isEng ? 'counting reactions' : 'counting posts'}).</span>
         `;
     }
 
@@ -640,9 +678,9 @@
                     <rect x="${L}" y="${T}" width="${pw}" height="${ph}" rx="8" fill="var(--surface)"/>
                     <line x1="${L + pw / 2}" y1="${T}" x2="${L + pw / 2}" y2="${T + ph}" stroke="var(--line)" stroke-dasharray="4 4"/>
                     <line x1="${L}" y1="${T + ph / 2}" x2="${L + pw}" y2="${T + ph / 2}" stroke="var(--line)" stroke-dasharray="4 4"/>
-                    <text x="${L + 10}" y="${T + 16}" font-size="12" font-weight="700" fill="var(--muted)">HIGH VELOCITY / POLARIZING</text>
-                    <text x="${L + pw - 10}" y="${T + 16}" text-anchor="end" font-size="12" font-weight="700" fill="var(--ok)">LEADER (VELOCITY + LOVE)</text>
-                    <text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">Net Positive Sentiment &rarr;</text>
+                    <text x="${L + 10}" y="${T + 16}" font-size="12" font-weight="700" fill="var(--muted)">TALKING A LOT, BUT MIXED</text>
+                    <text x="${L + pw - 10}" y="${T + 16}" text-anchor="end" font-size="12" font-weight="700" fill="var(--ok)">LEADER (LOVED AND GROWING)</text>
+                    <text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">How positive the talk is &rarr;</text>
                     <g id="scatterNodesLayer">
                         ${[0, 1, 2].map(i => `
                             <g class="scatter-node-group" id="scatterNode_${i}" data-idx="${i}">
@@ -717,8 +755,8 @@
 
         const bestS = [...list].sort((a, b) => b.sentiment - a.sentiment)[0];
         document.getElementById('mapTakeawayLine').innerHTML = `
-            <b class="k-tag">Sentiment</b>
-            <span><strong>${bestS.name}</strong> leads audience goodwill with <strong>+${bestS.sentiment}%</strong> net positive phrasing.</span>
+            <b class="k-tag">How people feel</b>
+            <span><strong>${bestS.name}</strong> has the friendliest talk: <strong>+${bestS.sentiment}%</strong> more positive than negative.</span>
         `;
     }
 
@@ -918,8 +956,8 @@
 
         const depthWin = [...list].sort((a, b) => b.commentRatio - a.commentRatio)[0];
         document.getElementById('radarTakeawayLine').innerHTML = `
-            <b class="k-tag">Depth Winner</b>
-            <span><strong>${depthWin.name}</strong> commands the strongest active community advocacy (${depthWin.commentRatio}/100 Comment-to-Like depth).</span>
+            <b class="k-tag">Most rounded support</b>
+            <span><strong>${depthWin.name}</strong> has the liveliest community: people reply to it more than they just like it (${depthWin.commentRatio}/100 replies-to-likes).</span>
         `;
     }
 
@@ -1139,8 +1177,8 @@
             const brandPeer = prodItem.parentBrand || brandItem.peer || 'Samsung';
             const skuPeer = brandItem.skuSample || 'iPhone 16 Pro';
 
-            document.getElementById('guardrailHeading').textContent = `Mismatched Entities: "${brandItem.name}" (Brand) vs "${prodItem.name}" (Product SKU)`;
-            document.getElementById('guardrailText').textContent = `Comparing a corporate parent brand against a single SKU skews 30-day Share of Voice. Pick an equal comparison:`;
+            document.getElementById('guardrailHeading').textContent = `Not a fair comparison: "${brandItem.name}" is a brand, "${prodItem.name}" is one product`;
+            document.getElementById('guardrailText').textContent = `A whole brand and a single product can't be compared fairly. Pick two of the same kind:`;
             document.getElementById('guardrailButtons').innerHTML = `
                 <button type="button" class="fix-chip" onclick="executeComparison('${brandItem.name} vs ${brandPeer}', 'brand')">Brands: ${brandItem.name} vs ${brandPeer}</button>
                 <button type="button" class="fix-chip" onclick="executeComparison('${skuPeer} vs ${prodItem.name}', 'product')">Products: ${skuPeer} vs ${prodItem.name}</button>
@@ -1191,6 +1229,31 @@
         renderHomePulse();
     };
 
+    /* Show / hide chart sections so the verdict card comes first */
+    window.toggleResultsSection = function(which, btn) {
+        const map = {
+            details: { id: 'resultsSectionDetails', label: 'Show the details', hideLabel: 'Hide the details', note: '2 charts', redraw: () => { drawSovVisual(); drawSentimentScatter(); } },
+            more: { id: 'resultsSectionMore', label: 'More detail', hideLabel: 'Hide more detail', note: 'six things measured, 5 reasons people buy', redraw: () => { drawRadarAndDrivers(); } }
+        };
+        const cfg = map[which];
+        if (!cfg) return;
+        const box = document.getElementById(cfg.id);
+        if (!box) return;
+
+        const willShow = box.hidden;
+        box.hidden = !willShow;
+        if (btn) {
+            btn.innerHTML = willShow
+                ? `${cfg.hideLabel} <small>(${cfg.note})</small>`
+                : `${cfg.label} <small>(${cfg.note})</small>`;
+            btn.setAttribute('aria-expanded', String(willShow));
+        }
+        // Charts need a visible box to size themselves, so redraw once it is on screen
+        if (willShow && state.activeProfiles && state.activeProfiles.length >= 2) {
+            requestAnimationFrame(() => cfg.redraw());
+        }
+    };
+
     window.switchSovMode = function(mode) {
         state.sovMode = mode;
         document.getElementById('btnSovMentions').classList.toggle('active', mode === 'mentions');
@@ -1227,7 +1290,7 @@
         a.href = URL.createObjectURL(blob);
         a.download = `Marqueuet_${state.activeQuery.replace(/\s+/g, '_')}.csv`;
         a.click();
-        toast('Exported normalized 30d OSINT CSV');
+        toast('Exported the 30-day data as a CSV file');
     };
 
     const tip = document.getElementById('chartTooltip');

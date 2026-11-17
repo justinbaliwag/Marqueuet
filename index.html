@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="description" content="Marqueuet turns 30 days of public TikTok, Instagram and Facebook conversation into share of voice, sentiment and velocity from a single prompt.">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>Marqueuet — Social OSINT Competitive Intelligence</title>
+    <title>Marqueuet — See which brand people talk about more</title>
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -246,8 +246,8 @@
 
                                     <div class="pv-phone-card">
                                         <div class="pv-phone-card-head">
-                                            <strong>Share of Voice</strong>
-                                            <span>30d OSINT</span>
+                                            <strong>Who gets talked about</strong>
+                                            <span>last 30 days</span>
                                         </div>
                                         <div class="pv-phone-sov-bars">
                                             <div class="pv-phone-sov-item">
@@ -320,9 +320,9 @@
     </main>
 
     <footer class="pv-footer">
-        <span>30-Day Trailing Public OSINT</span><span>&bull;</span>
+        <span>Public posts from the last 30 days</span><span>&bull;</span>
         <span>TikTok &bull; Instagram &bull; Facebook</span><span>&bull;</span>
-        <span>Share of Voice, Sentiment &amp; Velocity</span>
+        <span>Who is winning, how people feel, how fast it grows</span>
     </footer>
 </div>
 
@@ -330,7 +330,7 @@
     <!-- FLUID DRAGGABLE SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-top">
-            <a href="#hero" class="brand-logo" onclick="showHeroLanding(event); return false;" title="Return to Hero Landing">
+            <a href="#compare" class="brand-logo" onclick="startNewComparison(); return false;" title="Start a new comparison">
                 <span class="brand-initial">M</span><span class="hide-on-collapse">arqueuet</span>
             </a>
             <button type="button" class="rail-toggle-btn" onclick="toggleSidebar()" title="Collapse / Expand Sidebar" aria-label="Toggle Sidebar">
@@ -368,12 +368,17 @@
                 <div class="avatar-badge">S</div>
                 <div class="user-meta hide-on-collapse">
                     <strong>Brand Strategist</strong>
-                    <span>OSINT Pro Tier</span>
+                    <span>Pro Tier</span>
                 </div>
             </div>
-            <button type="button" class="rail-toggle-btn hide-on-collapse" id="themeBtn" onclick="toggleTheme()" title="Switch Dark / Light Theme">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-            </button>
+            <div class="sidebar-bottom-actions">
+                <button type="button" class="rail-toggle-btn hide-on-collapse" id="homeBtn" onclick="showHeroLanding()" title="Go to the welcome page" aria-label="Go to the welcome page">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+                </button>
+                <button type="button" class="rail-toggle-btn hide-on-collapse" id="themeBtn" onclick="toggleTheme()" title="Switch Dark / Light Theme">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                </button>
+            </div>
         </div>
 
         <div class="sidebar-grab-handle" id="sidebarGrabHandle" title="Drag or flick to resize sidebar">
@@ -391,22 +396,10 @@
                 </button>
                 <div class="osint-status-badge">
                     <span class="live-dot" style="margin:0;"></span>
-                    <span>30-Day Trailing OSINT • &gt;5 Engagement Filter</span>
+                    <span>Public posts, last 30 days • more than 5 reactions</span>
                 </div>
             </div>
 
-            <div class="topbar-right">
-                <button type="button" class="top-pill-btn" onclick="showHeroLanding(event)">
-                    Hero Landing
-                </button>
-                <button type="button" class="top-pill-btn" onclick="switchView('pulse')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    Trending Now
-                </button>
-                <button type="button" class="top-pill-btn" onclick="toggleTheme()">
-                    Theme
-                </button>
-            </div>
         </header>
 
         <!-- PAGE 1: DEDICATED PROMPT STAGE -->
@@ -427,7 +420,7 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             </button>
                             <input type="text" id="compareInput" placeholder="Compare two brands, e.g. Jollibee vs McDo or KKOPI vs BIGBREW..." aria-label="Comparison Prompt">
-                            <span class="osint-model-chip" id="scopeIndicatorChip">Brands 30d &#9662;</span>
+                            <span class="osint-model-chip" id="scopeIndicatorChip">Brands, 30d &#9662;</span>
                             <button type="submit" class="prompt-submit-btn" aria-label="Run Comparison">
                                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                             </button>
@@ -443,7 +436,7 @@
                     <div class="guardrail-card" id="guardrailCard" role="alert">
                         <div class="guardrail-title">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                            <span id="guardrailHeading">Entity Hierarchy Mismatch</span>
+                            <span id="guardrailHeading">These two can&rsquo;t be compared</span>
                         </div>
                         <p class="guardrail-desc" id="guardrailText"></p>
                         <div class="guardrail-actions" id="guardrailButtons"></div>
@@ -460,7 +453,7 @@
                 <div class="pulse-header">
                     <div>
                         <h1>Right-Now Social Pulse</h1>
-                        <p>Unprompted live OSINT feed for light scrolling, breakout trend spotting, and 1-click rival benchmarking.</p>
+                        <p>What people are posting about right now. Skim the feed, spot a trend, and compare two rivals in one click.</p>
                     </div>
                     <button type="button" class="btn-res primary" onclick="switchView('compare')">
                         + Custom Prompt Comparison
@@ -488,7 +481,7 @@
                     <aside class="pulse-side">
                         <div class="side-panel">
                             <h2>
-                                <span>Breakout Velocity (24h)</span>
+                                <span>Fastest growing today</span>
                                 <span style="font-size:12px; color:var(--muted); font-weight:500;">TikTok • IG • FB</span>
                             </h2>
                             <div id="pulseLeaderboard"></div>
@@ -518,7 +511,7 @@
                         </div>
                         <div class="res-title-group">
                             <h1 id="resMatchupTitle">Jollibee vs McDo</h1>
-                            <span class="type-badge" id="resEntityBadge">Brands • 30d OSINT</span>
+                            <span class="type-badge" id="resEntityBadge">Brands • last 30 days</span>
                         </div>
                     </div>
                     <div class="res-actions">
@@ -530,15 +523,35 @@
 
                 <div class="legend-strip">
                     <div class="legend-items" id="resLegendItems"></div>
-                    <span style="font-size:12px; color:var(--muted);" id="resFilterSummary"></span>
                 </div>
 
-                <div class="trinity-grid">
+                <!-- ===== VERDICT CARD: the whole answer, in plain words ===== -->
+                <article class="verdict-card" id="verdictCard" aria-live="polite">
+                    <div class="verdict-top">
+                        <span class="verdict-tag">The short answer</span>
+                    </div>
+                    <h2 class="verdict-line" id="verdictLine">Jollibee is getting more attention than McDo</h2>
+                    <div class="verdict-split">
+                        <div class="verdict-bar"><i id="verdictBarA" style="width:57%;background:var(--c0)"></i></div>
+                    </div>
+                    <ul class="verdict-points" id="verdictPoints"></ul>
+                    <div class="verdict-foot">
+                        <div class="verdict-source">
+                            <span id="verdictFresh">Based on public posts from the last 30 days</span>
+                            <span class="demo-badge" title="Numbers on this screen are made up for the demo, not measured">Sample data</span>
+                        </div>
+                        <button type="button" class="details-btn" id="verdictDetailsBtn" onclick="toggleResultsSection('details', this)">
+                            Show the details <small>(2 charts)</small>
+                        </button>
+                    </div>
+                </article>
+
+                <div class="results-section trinity-grid" id="resultsSectionDetails" hidden>
                     <article class="viz-card col-5">
                         <div class="viz-top">
                             <div>
-                                <h3>1. Earned Share of Voice (SOV)</h3>
-                                <p>30-day public conversation &amp; platform split</p>
+                                <h3>1. Who is getting talked about more</h3>
+                                <p>Public posts in the last 30 days, and which app they came from</p>
                             </div>
                             <div class="mini-toggle" role="group" aria-label="SOV Metric Mode">
                                 <div class="mini-toggle-thumb" id="sovSegmentedThumb"></div>
@@ -558,19 +571,28 @@
                     <article class="viz-card col-7">
                         <div class="viz-top">
                             <div>
-                                <h3>2. Public Sentiment &amp; Velocity Map</h3>
-                                <p>X: Net Sentiment • Y: 24h Velocity • Drag bubbles to test elastic spring</p>
+                                <h3>2. How people feel, and how fast it is growing</h3>
+                                <p>Left: how positive the talk is &bull; Up: how much faster it grew today</p>
                             </div>
                         </div>
                         <div class="viz-canvas" id="sentimentMapBox" style="padding:10px;"></div>
                         <div class="concise-badge" id="mapTakeawayLine"></div>
                     </article>
+                </div>
 
+                <div class="more-detail-foot">
+                    <button type="button" class="details-btn" id="verdictMoreBtn" onclick="toggleResultsSection('more', this)">
+                        More detail <small>(six things measured, 5 reasons people buy)</small>
+                    </button>
+                </div>
+
+                <div class="results-section" id="resultsSectionMore" hidden>
+                    <div class="trinity-grid">
                     <article class="viz-card col-12">
                         <div class="viz-top">
                             <div>
-                                <h3>3. Engagement Velocity, Community Depth &amp; Consumer Drivers</h3>
-                                <p>Left: 6-Axis Public OSINT Signals • Right: 5 Purchase Drivers</p>
+                                <h3>3. What is growing, who joins in, and why people buy</h3>
+                                <p>Left: six things we measured &bull; Right: five reasons people buy</p>
                             </div>
                         </div>
                         <div class="viz-canvas">
@@ -581,6 +603,12 @@
                         </div>
                         <div class="concise-badge" id="radarTakeawayLine"></div>
                     </article>
+                    </div>
+                </div>
+
+                <div class="results-back-row">
+                    <button type="button" class="details-btn" onclick="switchView('compare')">&larr; Compare something else</button>
+                    <button type="button" class="details-btn" onclick="switchView('pulse')">See what is trending now</button>
                 </div>
             </div>
         </section>

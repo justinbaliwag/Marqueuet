@@ -1152,6 +1152,13 @@
             opacity: 1;
         }
 
+        .sidebar-bottom-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
         .sidebar-bottom {
             margin-top: auto;
             padding-top: 10px;
@@ -1275,12 +1282,6 @@
             letter-spacing: 0.02em;
             color: var(--muted);
             font-weight: 500;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .top-pill-btn {
@@ -2070,6 +2071,179 @@
             color: var(--muted);
             font-size: 12px;
             letter-spacing: 0.02em;
+        }
+
+        /* ===== VERDICT CARD (the one answer users read first) ===== */
+        .verdict-card {
+            background: var(--surface);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--line-bright);
+            box-shadow: var(--shadow-md);
+            border-radius: 20px;
+            padding: 22px 24px;
+            margin-bottom: 18px;
+            max-width: 760px;
+        }
+
+        .verdict-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .verdict-tag {
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .demo-badge {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            color: var(--warn);
+            background: var(--warn-soft);
+            border: 1px solid rgba(245, 176, 65, 0.35);
+            cursor: help;
+        }
+
+        .verdict-line {
+            font-family: 'Bricolage Grotesque', 'Instrument Sans', sans-serif;
+            font-size: clamp(22px, 3vw, 32px);
+            line-height: 1.16;
+            letter-spacing: -0.02em;
+            color: var(--ink);
+            margin: 0 0 18px;
+        }
+
+        .verdict-split {
+            height: 14px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: var(--c1-soft);
+            margin-bottom: 18px;
+        }
+
+        .verdict-bar {
+            height: 100%;
+            width: 100%;
+        }
+
+        .verdict-bar i {
+            display: block;
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .verdict-points {
+            list-style: none;
+            margin: 6px 0 0;
+            padding: 0;
+            display: grid;
+            gap: 7px;
+        }
+
+        .verdict-points li {
+            display: flex;
+            gap: 9px;
+            align-items: baseline;
+            font-size: 14px;
+            color: var(--ink);
+            line-height: 1.4;
+        }
+
+        .verdict-points li b {
+            color: var(--ok);
+            font-weight: 800;
+        }
+
+        .verdict-points li span.dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--line-bright);
+            flex: none;
+            transform: translateY(-3px);
+        }
+
+        .verdict-foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+        }
+
+        .verdict-foot span {
+            font-size: 12.5px;
+            color: var(--tertiary);
+        }
+
+        .verdict-source {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .results-back-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 22px 0 8px;
+        }
+
+        .details-btn {
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ink);
+            background: var(--surface-2);
+            border: 1px solid var(--line-bright);
+            border-radius: 999px;
+            padding: 9px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .details-btn:hover {
+            background: var(--surface-3);
+            transform: translateY(-1px);
+        }
+
+        .details-btn small {
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .more-detail-foot {
+            display: flex;
+            justify-content: center;
+            margin: 18px 0 6px;
+        }
+
+        /* A section marked hidden must really be hidden, even when the
+           layout rule below asks for display:grid. */
+        [hidden] {
+            display: none !important;
+        }
+
+        .results-section {
+            animation: sectionFadeIn 0.35s ease both;
+        }
+
+        @keyframes sectionFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Strictly Visual 3-Card Bento Grid ("Holy Trinity") */
