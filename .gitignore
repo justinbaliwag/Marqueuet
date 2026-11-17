@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 .DS_Store
 Thumbs.db
 .vscode/
 node_modules/
+=======
+node_modules/
+.env
+>>>>>>> prototype/main
