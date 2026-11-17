@@ -1038,6 +1038,8 @@
         updateHeroTransformOrigin(ev);
         const hero = document.getElementById('heroLanding');
         if (hero) hero.classList.add('is-hidden');
+        const shell = document.getElementById('appShell');
+        if (shell) shell.inert = false;
         if (targetView) switchView(targetView);
         if (targetView === 'compare') {
             setTimeout(() => {
@@ -1050,7 +1052,9 @@
     window.showHeroLanding = function(ev) {
         updateHeroTransformOrigin(ev);
         const hero = document.getElementById('heroLanding');
-        if (hero) hero.classList.remove('is-hidden');
+        if (hero) { hero.classList.remove('is-hidden'); hero.scrollTop = 0; }
+        const shell = document.getElementById('appShell');
+        if (shell) shell.inert = true;
     };
 
     window.switchView = function(view) {
